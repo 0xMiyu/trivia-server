@@ -25,11 +25,12 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
                         JSON.parse(credentials?.message || "{}")
                     );
                     const nextAuthUrl = new URL(process.env.NEXTAUTH_URL);
+                     
                     if (signinMessage.domain !== nextAuthUrl.host) {
                         return null;
                     }
 
-                    if (signinMessage.nonce !== (await getCsrfToken({ req }))) {
+                    if (signinMessage.nonce !== (req.cookies['next-auth.csrf-token']!.split('|')[0])) {
                         return null;
                     }
 
@@ -46,6 +47,7 @@ export default async function auth(req: NextApiRequest, res: NextApiResponse) {
                         id: signinMessage.publicKey,
                     };
                 } catch (e) {
+                    console.log("auth error: ", e);
                     return null;
                 }
             },

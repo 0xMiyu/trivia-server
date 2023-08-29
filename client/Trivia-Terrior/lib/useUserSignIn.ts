@@ -17,7 +17,7 @@ export const useUserSignIn = (status: AuthStatus) => {
             if (!wallet.connected) {
                 walletModal.setVisible(true);
             }
-
+            console.log("aoliejdasdjklsha")
             const csrf = await getCsrfToken();
             if (!wallet.publicKey || !csrf || !wallet.signMessage) return;
 
@@ -38,6 +38,7 @@ export const useUserSignIn = (status: AuthStatus) => {
                 signature: serializedSignature,
             });
         } catch (error) {
+            console.log("LMAFAO")
             console.log(error);
         }
     };
