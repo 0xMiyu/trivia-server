@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  publicKey      String      @id
+  userName       String
+  profilePicture String      @default("https://arweave.net/3RfyJW1sAiKfagU9ek_I4Q9C4XRZID9cTj_MvyCER2w?ext=png")
+  totalWins      Int         @default(0)
+  totalEarningsSol Float     @default(0)
+  overallRanking Int?
+  role           Role        @default(USER)
+  totalPoints    Int         @default(0)
+  quizEntry      QuizEntry[]
+}
+
+model Quiz {
+  name          String
+  week          Int
+  description   String
+  startDateTime DateTime
+  solPrice      Float
+  ended         Boolean     @default(false)
+  quizId        Int         @id @default(autoincrement())
+  question      Question[]
+  prize         Prize[] 
+  quizEntry     QuizEntry[]
+}
+
+model Prize {
+  quizId   Int
+  prizeId  Int    
+  name     String
+  quantity Float
+  image    String
+  solValue Float
+  quiz     Quiz   @relation(fields: [quizId], references: [quizId], onDelete: Cascade)
+
+  @@id([quizId, prizeId])
+}
+
+model Question {
+  quizId     Int
+  timeLimit  Int      @default(60)
+  text       String
+  image      String?
+  points     Int      @default(100)
+  questionId Int
+  option     Option[]
+  quiz       Quiz     @relation(fields: [quizId], references: [quizId], onDelete: Cascade)
+
+  @@id([quizId, questionId])
+}
+
+model QuizEntry {
+  quizId       Int
+  numOfCorrect Int    @default(0)
+  publicKey    String
+  points       Int    @default(0)
+  quizEntryId  Int    @id @default(autoincrement())
+  ranking      Int?
+  user         User   @relation(fields: [publicKey], references: [publicKey], onDelete: Cascade)
+  quiz         Quiz   @relation(fields: [quizId], references: [quizId], onDelete: Cascade)
+
+  @@unique([quizEntryId, quizId, publicKey])
+}
+
+model Option {
+  questionId Int
+  correct    Boolean
+  text       String
+  optionId   Int
+  quizId     Int
+  question   Question @relation(fields: [questionId, quizId], references: [questionId, quizId], onDelete: Cascade)
+
+  @@id([optionId, questionId, quizId])
+}
+
+enum Role {
+  USER
+  OPERATOR
+  ADMIN
+}
